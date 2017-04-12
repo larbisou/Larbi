@@ -1,18 +1,19 @@
 BEGIN TRANSACTION;
 CREATE TABLE "utilisateur" (
-	`login `	varchar(8),
+	`login`	varchar(8),
 	`password`	varchar(64) NOT NULL,
-	`email`	vachar(256) NOT NULL,
-	`prenom`	INTEGER,
-	`coordonnes `	vachar(512),
+	`email`	varchar(256) NOT NULL,
+	`nom`	varchar(32),
+	`prenom`	varchar(32),
+	`coordonnees`	varchar(512),
 	`role_id`	INTEGER NOT NULL,
-	PRIMARY KEY(`login `),
+	PRIMARY KEY(`login`),
 	FOREIGN KEY(`role_id`) REFERENCES role(role_id)
 );
-CREATE TABLE "type_acquisitioon" (
-	`type_aquisition_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`appareil`	TEXT NOT NULL UNIQUE,
-	`modalite`	TEXT
+CREATE TABLE "type_acquisition" (
+	`type_acquisition_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+	`appareil`	varchar(32) NOT NULL UNIQUE,
+	`modalite`	varchar(64)
 );
 CREATE TABLE `source_resultat_serie` (
 	`resultat_cible`	INTEGER NOT NULL,
@@ -26,39 +27,48 @@ CREATE TABLE `source_resultat_resultat` (
 	FOREIGN KEY(`resultat_source`) REFERENCES resultat(resultat_id),
 	FOREIGN KEY(`resultat_cible`) REFERENCES resultat(resultat_id)
 );
-CREATE TABLE `serie` (
+CREATE TABLE "serie" (
+	`serie_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`type_acquisition_id`	INTEGER NOT NULL,
 	`etude_id`	INTEGER NOT NULL,
-	`serie_id`	INTEGER,
-	PRIMARY KEY(`serie_id`)
+	FOREIGN KEY(`type_acquisition_id`) REFERENCES `type_acquisition`(`type_acquisition_id`),
+	FOREIGN KEY(`etude_id`) REFERENCES `etude`(`etude_id`)
 );
-CREATE TABLE "role" (
+CREATE TABLE `role` (
 	`role_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`nom`	TEXT NOT NULL UNIQUE,
-	`description `	TEXT
+	`nom`	varchar(32) NOT NULL UNIQUE,
+	`description`	varchar(128)
 );
-CREATE TABLE `resutlat` (
+CREATE TABLE `resultat` (
 	`resultat_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`nom_fichier`	INTEGER NOT NULL,
+	`nom_fichier`	varchar(1024) NOT NULL,
 	`description`	TEXT,
-	`type`	INTEGER,
-	`auteur`	INTEGER NOT NULL,
+	`type`	varchar(8),
+	`auteur`	varchar(8) NOT NULL,
 	FOREIGN KEY(`auteur`) REFERENCES utilisateur(login)
 );
 CREATE TABLE `region_anatomique` (
-	`nom`	TEXT NOT NULL UNIQUE,
+	`nom`	varchar(64) NOT NULL UNIQUE,
 	`region_id`	INTEGER PRIMARY KEY AUTOINCREMENT
 );
-CREATE TABLE "referent_etude_utilisateur" (
-	`login`	INTEGER NOT NULL,
+CREATE TABLE `referent_etude_utilisateur` (
+	`login`	varchar(8) NOT NULL,
 	`etude_id`	INTEGER NOT NULL,
-	FOREIGN KEY(`login`) REFERENCES `utilisateur`(`login`),
-	FOREIGN KEY(`etude_id`) REFERENCES `etude`(`etude_id`)
+	FOREIGN KEY(`login`) REFERENCES utilisateur(login),
+	FOREIGN KEY(`etude_id`) REFERENCES etude(etude_id)
+);
+CREATE TABLE "patient" (
+	`patient_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+	`date_naissance`	date NOT NULL,
+	`sexe`	varchar(2) NOT NULL,
+	`nom`	varchar(32) NOT NULL,
+	`prenom`	varchar(32) NOT NULL,
+	`coordonnees`	varchar(512)
 );
 CREATE TABLE `note` (
 	`texte`	TEXT NOT NULL,
-	`date`	INTEGER NOT NULL,
-	`auteur`	INTEGER NOT NULL,
+	`date`	datetime NOT NULL,
+	`auteur`	varchar(8) NOT NULL,
 	`serie_id`	INTEGER,
 	`patient_id`	INTEGER,
 	`note_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,27 +77,19 @@ CREATE TABLE `note` (
 	FOREIGN KEY(`patient_id`) REFERENCES patient(patient_id)
 );
 CREATE TABLE "etude" (
-	`note`	varchar(128),
 	`etude_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+	`dateAcquisition`	date,
+	`notes`	TEXT,
 	`patient_id`	INTEGER NOT NULL,
 	`region_id`	INTEGER NOT NULL,
-	`dateacquisition`	datetime ,
-	FOREIGN KEY(`patient_id`) REFERENCES `patient`(`patien_id`),
-	FOREIGN KEY(`region_id`) REFERENCES `region`(`region_id`)
+	FOREIGN KEY(`patient_id`) REFERENCES `patient`(`patient_id`),
+	FOREIGN KEY(`region_id`) REFERENCES region_anatomique(region_id)
 );
 CREATE TABLE `donnee` (
-	`nom_fichier`	INTEGER NOT NULL,
-	`heure`	INTEGER NOT NULL,
+	`nom_fichier`	varchar(1024) NOT NULL,
+	`heure`	datetime NOT NULL,
 	`donnee_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`serie_id`	INTEGER NOT NULL,
 	FOREIGN KEY(`serie_id`) REFERENCES serie(serie_id)
-);
-CREATE TABLE "Patient" (
-	`patient_id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	`prenom`	INTEGER,
-	`date_de_naissance`	TEXT NOT NULL,
-	`sexe`	INTEGER NOT NULL,
-	`coordonnes`	varchar(32),
-	`nom`	varchar(32)
 );
 COMMIT;
