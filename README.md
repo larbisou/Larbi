@@ -5,6 +5,6 @@ techpacs
 
 # Sqlite : create classes Patients,etude, note .. etc 
 
-# QT: create research button, Login.
+# Qt: create research button, Login.
 
 should complete ...
