@@ -1,32 +1,56 @@
 #include <iostream>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QVariant>         
+#include <sstream>
+#include <string>
 
-// connecter a la base des données 
-int main() {
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-            db.setDatabaseName("teccpacs");
-            bool ok = db.open();
+std::string createRequest( std::string user_patient,
+                           std::string user_modalite,
+                           std::string user_region) {
+        
+		std::stringstream requete;
+        
+        requete << "select serie.serie_id, patient.nom, region_anatomique.nom, type_acquisition.modalite from ";
+        requete << " patient natural join etude  inner join region_anatomique on etude.region_id = region_anatomique.region_id natural join serie natural join type_acquisition where ";
 
-            if (!ok) {
-            std::cout << "error" << std::endl;
-            return 1;
+
+        bool first = true;
+        if (user_patient != "") {
+                if (!first)
+                        requete << " and ";
+                first = false;
+                requete << "  patient.nom = \"" << user_patient << "\"";
+        }
+        if (user_modalite != "") {
+                if (!first)
+                        requete << " and ";
+                first = false;
+                requete << " type_acquisition.modalite = \"" << user_modalite << "\"";
+        }
+        if (user_region != "") {
+                if (!first)
+                        requete << " and ";
+                first = false;
+                requete << " region_anatomique.nom = \"" << user_region << "\"";
+        }
+        
+        return requete.str();
+
 }
-            else {
-            std::cout << "ok" << std::endl;
-
-            QSqlQuery query(db);
-            if (!query.exec("PRAGMA foreign_keys = ON")) {
-            std::cout << "Impossible d'activer le support des clés étrangères." << std::endl;
-            return 2;
-}
-
-            // création des tables
-            //create_tables(db);
 
 
-            return 0;
-}
+int main(int argc, char **argv) {
+
+        std::string requete = createRequest("", "IRM", "Thyroide");
+        std::cout << "la requête est " << std::endl;
+        std::cout << requete << std::endl;
+
+		requete = createRequest("", "", "coeur");
+        std::cout << "la requête est " << std::endl;
+        std::cout << requete << std::endl;
+
+		requete = createRequest("Souhlal", "", "");
+        std::cout << "la requête est " << std::endl;
+        std::cout << requete << std::endl;
+
+
+        return 0;
 }
